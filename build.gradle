@@ -1,0 +1,86 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+        classpath "com.avast.gradle:gradle-docker-compose-plugin:$dockerComposePluginVersion"
+    }
+}
+
+
+apply plugin: 'docker-compose'
+
+subprojects {
+
+    apply plugin: "java"
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        eventuateMavenRepoUrl.split(',').each { repoUrl -> maven { url repoUrl } }
+    }
+
+    dependencies {
+        implementation enforcedPlatform("io.quarkus:quarkus-bom:${quarkusVersion}")
+        implementation(platform("io.eventuate.platform:eventuate-platform-dependencies:$eventuatePlatformVersion"))
+        implementation group: 'io.eventuate.tram.core', name: 'eventuate-tram-events', version: '0.7.0.RELEASE'
+        implementation 'io.eventuate.tram.core:eventuate-tram-spring-events-publisher-starter:0.7.0.RELEASE'
+
+
+    }
+
+}
+
+dockerCompose {
+    environment.put "EVENTUATE_MESSAGING_KAFKA_IMAGE_VERSION", eventuateMessagingKafkaImageVersion
+    environment.put "EVENTUATE_COMMON_VERSION", eventuateCommonImageVersion
+    environment.put "EVENTUATE_CDC_VERSION", eventuateCdcImageVersion
+    environment.put "EVENTUATE_JAVA_BASE_IMAGE_VERSION", eventuateExamplesBaseImageVersion
+
+    waitForHealthyStateTimeout = java.time.Duration.ofMinutes(6)
+
+    // Default name can be too long
+
+
+    mysqlbinlog {
+        projectName = "eventuate-teqco"
+        useComposeFiles = ["docker-compose-mysql-binlog.yml"]
+    }
+
+    kafkaOnly {
+        projectName = "eventuate-teqco"
+        useComposeFiles = ["docker-compose-mysql-binlog.yml"]
+        startedServices = ["kafka"]
+    }
+
+    mssqlpolling {
+        projectName = "eventuate-teqco"
+        useComposeFiles = ["docker-compose-mssql-polling.yml"]
+    }
+
+    postgreswal {
+        projectName = "eventuate-teqco"
+        useComposeFiles = ["docker-compose-postgres-wal.yml"]
+    }
+
+//    configurations.all {
+//        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+//            if (details.requested.group == 'com.google.guava' && details.requested.name == 'guava') {
+//                details.useVersion '32.0.1-jre'
+//            }
+//            if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-core') {
+//                details.useVersion '2.16.1'
+//            }
+//        }
+//    }
+
+}
+
+

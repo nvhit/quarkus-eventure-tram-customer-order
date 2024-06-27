@@ -1,0 +1,56 @@
+plugins {
+    id "io.quarkus" version "${quarkusVersion}"
+    id 'org.kordamp.gradle.jandex' version '1.0.0'
+    id 'maven-publish'
+
+}
+
+dependencies {
+    implementation  project(":common")
+    implementation  project(":customer-service-api-web")
+    implementation  project(":customer-service-api-events")
+    implementation  project(":order-service-api-events")
+
+    implementation "io.eventuate.tram.core:eventuate-tram-quarkus-jdbc-kafka:0.7.0.RELEASE"
+
+    implementation 'org.jboss.jandex:jandex-maven-plugin:1.2.3'
+
+    implementation 'io.quarkus:quarkus-core'
+    implementation 'io.quarkus.arc:arc'
+    implementation 'io.quarkus:quarkus-arc-deployment'
+    implementation 'io.quarkus:quarkus-smallrye-health'
+    implementation 'io.quarkus:quarkus-smallrye-openapi'
+    implementation 'io.quarkus:quarkus-resteasy-jackson'
+    implementation 'io.quarkus:quarkus-jdbc-mysql'
+
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+    //implementation 'io.eventuate.tram.core:eventuate-tram-events-publisher:0.34.0.RELEASE' // Điều chỉnh phiên bản cho phù hợp
+
+}
+group = 'io.eventuate.examples.tram.ordersandcustomers.customers'
+version = '1.0.0-SNAPSHOT'
+import org.apache.tools.ant.filters.*
+
+processResources {
+    outputs.upToDateWhen { false }
+    filter ReplaceTokens, tokens: ["EVENTUATEDATABASE": System.env.EVENTUATEDATABASE ?: "mysql"]
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'io.eventuate.examples.tram.ordersandcustomers.customers'
+            artifactId 'ordersandcustomers-customer'
+            version '1.0.0-SNAPSHOT'
+
+            from components.java
+        }
+    }
+}
+
+tasks.named('quarkusDependenciesBuild') {
+    dependsOn tasks.named('jandex')
+}
+
+
+

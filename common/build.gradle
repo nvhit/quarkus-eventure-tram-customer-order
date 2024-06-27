@@ -1,0 +1,11 @@
+plugins {
+    id 'org.kordamp.gradle.jandex' version '0.12.0'
+}
+
+dependencies {
+    implementation 'io.eventuate.tram.core:eventuate-tram-quarkus-events:0.7.0.RELEASE'
+    //compile "io.eventuate.tram.core:eventuate-tram-quarkus-events"
+    implementation 'javax.persistence:javax.persistence-api:2.2'
+    implementation "commons-lang:commons-lang:2.6"
+}
+

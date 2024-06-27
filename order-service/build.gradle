@@ -1,0 +1,39 @@
+plugins {
+    id "io.quarkus" version "${quarkusVersion}"
+    id 'org.kordamp.gradle.jandex' version '1.0.0'
+    id 'maven-publish'
+}
+
+dependencies {
+    implementation project(":common")
+    implementation project(":order-service-api-web")
+    implementation project(":customer-service-api-events")
+    implementation project(":order-service-api-events")
+
+    implementation "io.eventuate.tram.core:eventuate-tram-quarkus-jdbc-kafka:0.7.0.RELEASE"
+
+    implementation 'io.quarkus:quarkus-core'
+    implementation 'io.quarkus.arc:arc'
+    implementation 'io.quarkus:quarkus-arc-deployment'
+    implementation 'io.quarkus:quarkus-smallrye-health'
+    implementation 'io.quarkus:quarkus-smallrye-openapi'
+    implementation 'io.quarkus:quarkus-resteasy-jackson'
+
+    implementation 'io.quarkus:quarkus-jdbc-mysql'
+    implementation 'io.quarkus:quarkus-jdbc-mssql'
+    implementation 'io.quarkus:quarkus-jdbc-postgresql'
+
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+}
+
+import org.apache.tools.ant.filters.*
+
+processResources {
+    outputs.upToDateWhen { false }
+    filter ReplaceTokens, tokens: ["EVENTUATEDATABASE": System.env.EVENTUATEDATABASE ?: "mysql"]
+}
+
+
+tasks.named('quarkusDependenciesBuild') {
+    dependsOn tasks.named('jandex')
+}
